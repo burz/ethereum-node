@@ -7,7 +7,7 @@ export class NimbusBeaconService extends NodeService {
     const service = new NimbusBeaconService()
     service.setId()
     const workingDir = service.buildWorkingDir(dir)
-    
+
     const image = 'statusim/nimbus-eth2'
 
     const gethServices = (executionClients.map(client => { return client.buildExecutionClientWsEndpointUrl() })).join()
@@ -26,7 +26,7 @@ export class NimbusBeaconService extends NodeService {
       service.id, // id,
       1, // configVersion
       image, // image,
-      'multiarch-v22.6.0', // imageVersion,
+      'multiarch-v22.6.1', // imageVersion,
       [
         `--network=${network}`,
         `--data-dir=${dataDir}`,

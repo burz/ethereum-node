@@ -1,14 +1,10 @@
 <template>
   <div class="config-node">
-    <div class="config-row">
-      <div class="row-content" v-for="(item, index) in configData" :key="index">
-        <div v-if="item.network == 'testNet'" class="testnet-icon">
-          <img src="../../../../public/img/icon/mainnetIcon.png" alt="icon" />
-        </div>
-        <div v-else class="testnet-icon">
-          <img src="../../../../public/img/icon/testnetIcon.png" alt="" />
-        </div>
-        <span>Ethereum-Mainnet</span>
+    <div class="server">
+      <span class="title">Server</span>
+      <div class="server-details">
+        <span class="ip">ip</span>
+        <span class="name">{{ maschinName }}</span>
       </div>
     </div>
     <div class="config-bg">
@@ -46,7 +42,7 @@
         <div class="remove-modal-content">
           <div class="title-box">
             <img
-              src="../../../../public/img/icon/manage-node-icons/stop-violence.png"
+              src="../../../../public/img/icon/manage-node-icons/stop.png"
               alt=""
             />
           </div>
@@ -55,11 +51,11 @@
             <span>Are you sure?</span>
           </div>
           <div class="remove-btn">
-            <div class="yes-box" @click="removeConfirmation">
-              <span>Yes</span>
-            </div>
             <div class="cancel-box" @click="cancelRemove">
               <span>Cancel</span>
+            </div>
+            <div class="yes-box" @click="removeConfirmation">
+              <span>Remove</span>
             </div>
           </div>
         </div>
@@ -79,7 +75,11 @@ export default {
       modalActive: false,
       removeModal: false,
       removeIsConfirmed: false,
+      maschinName: "",
     };
+  },
+  beforeMount() {
+    this.maschinNameMet();
   },
   computed: {
     ...mapWritableState(useNodeHeader, {
@@ -94,6 +94,16 @@ export default {
     }),
   },
   methods: {
+    async maschinNameMet() {
+      try {
+        const response = await ControlService.getServerVitals();
+        let data = await response.serverVitals.stdout;
+        const arr = data.split(/\r?\n/);
+        this.maschinName = arr[0];
+      } catch (error) {
+        console.log(error);
+      }
+    },
     openModal() {
       this.modalActive = true;
     },
@@ -135,23 +145,80 @@ export default {
   margin-top: 1px;
   display: grid;
   background-color: #3b3b3b;
-  grid-template-rows: 4% 9% 87%;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  grid-template-columns: 1fr;
   justify-content: center;
   align-items: center;
 }
 .config-bg {
-  grid-column: 1/7;
-  grid-row: 3;
+  grid-column: 1;
+  grid-row: 3/10;
   width: 95%;
-  height: 98%;
+  height: 100%;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(9, 1fr);
   background-color: #606060;
-  border-radius: 27px;
+  border-radius: 10px;
   margin: 0 auto;
 }
+.server {
+  grid-column: 1;
+  grid-row: 1/3;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.server .title {
+  width: max-content;
+  height: 15px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(138, 138, 138);
+  text-transform: uppercase;
+  margin-left: 8px;
+}
+.server-details {
+  width: 95%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.server-details span:first-child {
+  width: 100%;
+  height: 30%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(138, 138, 138);
+  text-transform: uppercase;
+  border: 1px solid #a1a1a1;
+  margin-top: 2px;
+  background-color: rgb(44, 44, 44);
+  border-radius: 5px;
+  padding: 4px;
+}
+.server-details span:last-child {
+  width: 100%;
+  height: 30%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(102, 199, 149);
+  text-transform: uppercase;
+  border: 1px solid #a1a1a1;
+  margin-top: 2px;
+  background-color: rgb(44, 44, 44);
+  border-radius: 5px;
+  padding: 4px;
+}
+
 .config-box .config-title {
   grid-column: 2/7;
   grid-row: 1;
@@ -377,16 +444,16 @@ export default {
   z-index: 98;
 }
 .remove-modal-content {
-  width: 50%;
+  width: 40%;
   height: 40%;
-  border-radius: 1rem;
+  border-radius: 3rem;
   background-color: #324844;
   border: 4px solid rgb(171, 170, 170);
   z-index: 99;
   opacity: 1;
   position: fixed;
   top: 30%;
-  left: 25%;
+  left: 30%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -403,7 +470,7 @@ export default {
 }
 .remove-message span {
   color: rgb(195, 195, 195);
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 800;
 }
 .remove-btn {
@@ -414,24 +481,23 @@ export default {
   align-items: center;
 }
 .yes-box {
-  width: 20%;
+  width: 30%;
   height: 50%;
-  border-radius: 30px;
-  border: 3px solid #8f8f8f;
-  background-color: #32564d;
+  border-radius: 10px;
+  background-color: #e94949;
   box-shadow: 0 1px 3px 1px rgb(35, 59, 53);
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: rgb(210, 210, 210);
 }
 .cancel-box {
-  width: 20%;
+  width: 30%;
   height: 50%;
-  border-radius: 30px;
+  border-radius: 10px;
   border: 3px solid #8f8f8f;
   background-color: #32564d;
   box-shadow: 0 1px 3px 1px rgb(35, 59, 53);
@@ -439,30 +505,27 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: rgb(201, 97, 97);
+  color: rgb(187, 187, 187);
 }
 .cancel-box:hover {
-  color: rgb(240, 82, 82);
   background-color: #2c433d;
   transform: scale(1.1);
   transition: all 100ms;
 }
 .yes-box:hover {
-  color: #dadada;
-  background-color: #2c433d;
+  background-color: #e94949;
+  border: none;
   transform: scale(1.1);
   transition: all 100ms;
+  color: #d6d6d6;
 }
 .cancel-box:active {
-  color: #dadada;
-  font-size: 1rem;
   transform: scale(1);
   box-shadow: none;
 }
 .yes-box:active {
-  font-size: 1rem;
   transform: scale(1);
   box-shadow: none;
 }
@@ -474,8 +537,8 @@ export default {
   align-items: center;
 }
 .title-box img {
-  width: 40px;
-  height: 40px;
+  width: 70px;
+  height: 70px;
   margin-top: 10px;
 }
 

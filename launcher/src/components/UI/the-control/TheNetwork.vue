@@ -1,9 +1,12 @@
 <template>
   <div class="networkParent">
-    <div class="networkTtl"><span>NETWORK</span></div>
+    <!-- <div class="networkTtl"><span>NETWORK</span></div> -->
     <div class="networkBox">
       <div class="networkIco">
-        <img src="../../../../public/img/icon/control/wifiIcon.svg" />
+        <div class="networkIco-container">
+          <img src="../../../../public/img/icon/control/wifiIcon.svg" />
+        </div>
+        <span>NETWORK</span>
       </div>
       <div class="totalReceived">
         <div class="receivePerSecond">
@@ -63,10 +66,11 @@ export default {
         const response = await ControlService.getServerVitals();
         let data = await response.serverVitals.stdout;
         const arr = data.split(/\r?\n/);
-        this.receiveValue = parseInt(arr[7]);
-        this.transmitValue = parseInt(arr[8]);
+        const arr2 = arr[5].split(" ");
+        this.receiveValue = parseInt(arr2[0]);
+        this.transmitValue = parseInt(arr2[1]);
       } catch (error) {
-        console.log("Loading...");
+        console.log(error);
       }
     },
   },
@@ -83,41 +87,41 @@ export default {
   box-sizing: border-box;
   height: 100%;
 }
-.networkTtl {
-  width: 98%;
-  height: 20%;
-  background: #33393e;
-  border-radius: 10px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  box-sizing: border-box;
-}
-.networkTtl span {
-  font-size: 50%;
-  color: #eee;
-  border: 1px solid rgb(27, 26, 26);
-  width: 20%;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 .networkBox {
   width: 100%;
-  height: 79%;
+  height: 100%;
   display: flex;
   box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
 }
 .networkIco {
   box-sizing: border-box;
   width: 30%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 }
-.networkIco img {
+.networkIco-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 80%;
+}
+.networkIco-container img {
   width: 70%;
+}
+.networkIco span {
+  width: 100%;
+  height: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 50%;
+  font-weight: bold;
 }
 .totalReceived,
 .totalTransmitted {
@@ -127,7 +131,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 99%;
+  height: 80%;
 }
 .receivePerSecond {
   width: 100%;

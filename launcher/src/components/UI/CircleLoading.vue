@@ -2,10 +2,6 @@
   <div class="progress-box">
     <div class="progress">
       <div class="color"></div>
-      <span v-if="active"
-        >CHECKING IF THE OS OF YOUR SERVER IS SUPPORTED...</span
-      >
-      <span class="check-msg" v-if="!active">{{ this.message }}</span>
       <img src="/img/icon/welcome-page/gear.png" class="gear" v-if="active" />
     </div>
   </div>
@@ -16,16 +12,6 @@ export default {
   props: {
     message: String,
     open: Boolean,
-  },
-  data() {
-    return {
-      active: true,
-    };
-  },
-  created() {
-    setTimeout(() => {
-      this.active = false;
-    }, 5000);
   },
 };
 </script>

@@ -7,7 +7,7 @@ export class GrafanaService extends NodeService {
     const service = new GrafanaService()
     service.setId()
     const workingDir = service.buildWorkingDir(dir)
-    
+
     const image = 'grafana/grafana'
 
     const provisioningDir = '/etc/grafana/provisioning'
@@ -25,11 +25,11 @@ export class GrafanaService extends NodeService {
       service.id, // id
       1, // configVersion
       image, // image
-      '8.5.6', // imageVersion
+      '9.0.2', // imageVersion
       'bash -c "touch /etc/grafana/grafana.ini && echo \\"$GRAFANA_INI\\" > /etc/grafana/grafana.ini && /run.sh"', // command
       null, // entrypoint
       {
-        GRAFANA_INI: '[auth.anonymous]\nenabled = true\norg_role = Admin\n',
+        GRAFANA_INI: 'force_migration = true\n\n[auth.anonymous]\nenabled = true\norg_role = Admin\n',
       }, // env
       ports, // ports
       volumes, // volumes

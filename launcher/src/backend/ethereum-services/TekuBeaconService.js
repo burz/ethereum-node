@@ -16,13 +16,13 @@ export class TekuBeaconService extends NodeService {
         const volumes = [
             new ServiceVolume(workingDir + '/data', dataDir)
         ]
-    
+
         service.init(
             'TekuBeaconService',    // service
             service.id,             // id
             1,                      // configVersion
             image,                  // image
-            '22.6.0',               // imageVersion
+            '22.6.1',               // imageVersion
             [
                 `--network=${network}`,
                 '--p2p-enabled=true',

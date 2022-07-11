@@ -75,7 +75,12 @@
                           :src="item.icon"
                           alt="icon"
                           @mousedown.prevent.stop
+                          @mouseover="runningTooltip(item)"
+                          @mouseleave="item.displayTooltip = false"
                         />
+                        <span class="tooltip" v-if="item.displayTooltip">{{
+                          item.name
+                        }}</span>
                       </div>
                     </div>
                   </change-modal>
@@ -116,7 +121,7 @@ import ToggleButton from "./toggleButton.vue";
 import ChangeModal from "./ChangeModal.vue";
 import { mapWritableState } from "pinia";
 import { useClickInstall } from "@/store/clickInstallation";
-import { useServices } from '../../../store/services';
+import { useServices } from "../../../store/services";
 export default {
   components: { ToggleButton, ChangeModal },
 
@@ -146,7 +151,7 @@ export default {
       allPlugins: "allServices",
     }),
   },
-  beforeUpdate() {},
+  beforeMount() {},
   mounted() {
     if (Object.keys(this.selectedPreset.includedPlugins).length === 0) {
       this.$router.push("/clickinstall");
@@ -158,41 +163,101 @@ export default {
           ...item,
         };
       });
+    this.sortPlugins();
   },
   methods: {
     pluginChangeHandler(el, item, idx) {
       el.showChangeModal = false;
-      if (el.category === "execution") {
-        this.selectedPreset.includedPlugins[idx] = item;
-      }
-      if (el.category === "validator" || el.category === "consensus") {
-        this.selectedPreset.includedPlugins[idx] = item;
+      this.selectedPreset.includedPlugins[idx] = item; //no matter what change the service you clicked on
+      if (this.selectedPreset.name === "staking") {
+        //if the preset is staking:
+        if (item.category === "consensus") {
+          //and you just changed the consensus client
+          let valIndex = this.selectedPreset.includedPlugins.findIndex(
+            (e) => e.category === "validator"
+          ); //find the index of the current validator service
+          this.selectedPreset.includedPlugins[valIndex] = this.allPlugins.find(
+            (e) => e.service === item.name + "ValidatorService"
+          ); //change the validator service to the matching one
+        } else if (item.category === "validator") {
+          //otherwise if you changed the validator client do the same for the consensus client
+          let conIndex = this.selectedPreset.includedPlugins.findIndex(
+            (e) => e.category === "consensus"
+          );
+          this.selectedPreset.includedPlugins[conIndex] = this.allPlugins.find(
+            (e) => e.service === item.name + "BeaconService"
+          );
+        }
       }
     },
-    // validatorAndConsensusHandler(el, item, idx) {
-    //   this.selectedPreset.includedPlugins.map((param) => {
-    //     if (
-    //       param.name === this.selectedPreset.includedPlugins[idx].name &&
-    //       (param.category === "validator" || param.category === "consensus")
-    //     ) {
-    //       // this.filteredPluginsOnName.push(param);
-    //       param = item;
-    //     }
-    //   });
-    // },
+    sortPlugins() {
+      //sorts includedPlugins in this order: EXECUTION -> CONSENSUS -> VALIDATOR -> SERVICE
+      if (this.selectedPreset.includedPlugins) {
+        const ec = this.selectedPreset.includedPlugins.filter(
+          (p) => p.category === "execution"
+        );
+        const cc = this.selectedPreset.includedPlugins.filter(
+          (p) => p.category === "consensus"
+        );
+        const vc = this.selectedPreset.includedPlugins.filter(
+          (p) => p.category === "validator"
+        );
+        const services = this.selectedPreset.includedPlugins.filter(
+          (p) => p.category === "service"
+        );
+        this.selectedPreset.includedPlugins = new Array().concat(
+          ec,
+          cc,
+          vc,
+          services
+        );
+      }
+    },
     pluginExChange(el) {
-      this.selectedPreset.includedPlugins.filter((item) => {
-        item.showChangeModal = false;
-        if (item?.service === el.service && item?.id === el.id) {
-          this.checkPluginCategory(item);
-        }
-      });
-      el.showChangeModal = true;
+      if (el.category !== "service") {
+        this.selectedPreset.includedPlugins.filter((item) => {
+          item.showChangeModal = false;
+          if (item?.service === el.service) {
+            this.checkPluginCategory(item);
+          }
+        });
+        el.showChangeModal = true;
+      }
     },
     checkPluginCategory(element) {
-      this.filteredPluginsOnCategory = this.allPlugins.filter(
-        (item) => item.category === element.category
-      );
+      let filter;
+      switch (
+        this.selectedPreset.name //apply filter depending on which preset was chosen
+      ) {
+        case "staking":
+          filter = (item) =>
+            item.category === element.category &&
+            item.service !== "BloxSSVService";
+          break;
+        case "blox ssv":
+          filter = (item) => {
+            if (element.category === "validator") {
+              return item.service === "BloxSSVService";
+            }
+            return item.category === element.category;
+          };
+          break;
+        case "obol ssv":
+          //filter = (item) => item.category === element.category
+          break;
+        case "rocketpool":
+          //filter = (item) => item.category === element.category
+          break;
+        default:
+          break;
+      }
+      this.filteredPluginsOnCategory = this.allPlugins.filter(filter);
+    },
+    runningTooltip(el) {
+      this.allPlugins.filter((i) => {
+        i.category === el.category && i.id == el.id;
+        el.displayTooltip = true;
+      });
     },
   },
 };
@@ -369,16 +434,17 @@ export default {
   height: 43px;
   border-radius: 10px 10px 0 0;
   background-color: #2b3034;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr;
 }
 .replaced-plugins .item {
-  width: 90%;
-  height: 90%;
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
+  position: relative;
 }
 .replaced-plugins .item img {
   width: 30px;
@@ -387,14 +453,7 @@ export default {
   box-shadow: 0 1px 3px 1px rgb(47, 47, 47);
   border-radius: 100%;
 }
-.replaced-plugins .item img:hover {
-  transform: scale(1.07);
-  border: 2px solid rgb(123, 208, 251);
-}
 
-.replaced-plugins .item img:active {
-  transform: scale(1);
-}
 .name-box {
   width: 95%;
   height: 20%;
@@ -624,8 +683,8 @@ export default {
   align-items: center;
 }
 .btn-box a {
-  width: 95%;
-  height: 90%;
+  width: 25%;
+  height: 60%;
   text-decoration: none;
   display: flex;
   justify-content: space-evenly;
@@ -633,8 +692,8 @@ export default {
 }
 .next-btn,
 .back-btn {
-  width: 55%;
-  height: 60%;
+  width: 100%;
+  height: 100%;
   border: 2px solid rgb(125, 125, 125);
   border-radius: 20px;
   background-color: #336666;
@@ -662,5 +721,22 @@ export default {
 .faildreq {
   color: rgb(225, 54, 54) !important;
   border: 1px solid rgb(225, 54, 54) !important;
+}
+.tooltip {
+  width: max-content;
+  height: 15px;
+  background-color: rgb(42, 42, 42);
+  border: 1px solid #a0a0a0;
+  border-radius: 3px;
+  padding: 0 3px 3px 3px;
+  position: absolute;
+  top: 5px;
+  left: 25%;
+  transform: translate(-5px, -5px);
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: #dce2e9;
+  text-align: center;
+  display: inline-block;
 }
 </style>

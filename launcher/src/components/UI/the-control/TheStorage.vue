@@ -1,20 +1,25 @@
 <template>
   <div class="storageParent">
-    <div class="storageTtl"><span>storage</span></div>
     <div class="storageBox">
       <div class="storageIco">
-        <img src="../../../../public/img/icon/control/hdd.svg" />
+        <div class="icoContainer">
+          <img src="../../../../public/img/icon/control/hdd.svg" />
+        </div>
+        <span>HARD DISK</span>
       </div>
       <div class="storageProcPart">
         <div class="freePart">
-          <span>{{ countFreeVal }} MiB FREE</span>
+          <span>{{ countFreeVal }} MB FREE</span>
         </div>
         <div class="totalPart">
-          <span> {{ total }} MiB TOTAL</span>
+          <span>/ {{ total }} MB TOTAL</span>
         </div>
         <div class="valueBarPart">
           <div class="valueBarPart_loader">
-            <div class="valueBarPart_loader-value" :style="valueStoragePer"></div>
+            <div
+              class="valueBarPart_loader-value"
+              :style="valueStoragePer"
+            ></div>
           </div>
         </div>
         <div class="latencyCounter">
@@ -69,9 +74,10 @@ export default {
         const response = await ControlService.getServerVitals();
         let data = await response.serverVitals.stdout;
         const arr = data.split(/\r?\n/);
-        this.usedStotagePer = parseInt(arr[3]);
-        this.total = parseInt(arr[4]);
-        this.used = parseInt(arr[5]);
+        this.usedStotagePer = parseInt(arr[2]);
+        const arr2 = arr[3].split(" ");
+        this.total = parseInt(arr2[0]);
+        this.used = parseInt(arr2[1]);
       } catch (error) {
         console.log(error);
       }
@@ -94,41 +100,39 @@ export default {
   box-sizing: border-box;
   height: 100%;
 }
-.storageTtl {
-  width: 98%;
-  height: 20%;
-  background: #33393e;
-  border-radius: 10px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  box-sizing: border-box;
-}
-.storageTtl span {
-  font-size: 55%;
-  color: #eee;
-  border: 1px solid rgb(27, 26, 26);
-  width: 20%;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+
 .storageBox {
   width: 100%;
-  height: 79%;
+  height: 100%;
   display: flex;
   box-sizing: border-box;
 }
 .storageIco {
-  box-sizing: border-box;
-  width: 30%;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
+  width: 30%;
+  height: 100%;
+}
+.icoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 80%;
 }
 .storageIco img {
-  width: 70%;
+  width: 80%;
+}
+.storageIco span {
+  width: 100%;
+  height: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 50%;
+  font-weight: bold;
 }
 .storageProcPart {
   width: 70%;
@@ -144,37 +148,44 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  font-size: 90%;
-  font-weight: bold;
+  margin-top: 4px;
+  margin-left: 11px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5ed966;
 }
 .totalPart {
-  width: 90%;
+  width: 94%;
   height: 15%;
+  margin-top: 10px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  font-size: 60%;
-  font-weight: bold;
-  color: #25db32;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #eee;
 }
 .valueBarPart {
   width: 100%;
-  height: 14%;
+  height: 10%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 .valueBarPart_loader {
   width: 95%;
-  height: 70%;
+  height: 90%;
+  border-radius: 3px;
+  margin-top: 3px;
   background: #848484;
   justify-content: flex-start;
   align-items: center;
   display: flex;
 }
 .valueBarPart_loader-value {
-  height: 50%;
-  background: #25db32;
+  height: 90%;
+  border-radius: 3px;
+  background: #5ed966;
 }
 .latencyCounter {
   width: 100%;
